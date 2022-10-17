@@ -1,0 +1,68 @@
+---
+- name: Set hostname
+  hostname:
+    name: "{{ hostname }}"
+- name: Write /etc/hosts
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+- name: Copy containerd.conf
+  copy:
+    src: containerd.conf
+    dest: /etc/modules-load.d/containerd.conf
+    owner: root
+    group: root
+    mode: 0644
+- name: Add overlay and br_netfilter kernel modules
+  modprobe:
+    name: "{{ item }}"
+  loop:
+    - overlay
+    - br_netfilter
+- name: Copy 99-kubernetes-cri.conf
+  copy:
+    src: 99-kubernetes-cri.conf
+    dest: /etc/sysctl.d/99-kubernetes-cri.conf
+    owner: root
+    group: root
+    mode: 0644
+- name: Reload sysctl
+  command: sysctl --system
+- name: Install containerd
+  apt:
+    name: containerd
+    update_cache: yes
+- name: Restart containerd
+  service:
+    name: containerd
+    state: restarted
+- name: Turn swap off
+  command: swapoff -a
+- name: Install required packages
+  apt:
+    name:
+      - apt-transport-https 
+      - curl
+- name: Add Apt signing key for Google
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+- name: Copy Kubernetes APT repository
+  copy:
+    src: kubernetes.list
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    owner: root
+    group: root
+    mode: 0644
+- name: Install Kubernetes
+  apt:
+    name: 
+      - kubelet=1.24.0-00
+      - kubeadm=1.24.0-00 
+      - kubectl=1.24.0-00
+    update_cache: yes
+- name: Mark Kubernetes packages as 'hold'
+  command: apt-mark hold kubelet kubeadm kubectl

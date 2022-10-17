@@ -1,0 +1,12 @@
+--- 
+- hosts: master
+  roles:
+    - common
+    - control_plane
+- hosts: workers
+  roles:
+    - common
+    - worker_node
+
+
+

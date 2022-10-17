@@ -1,0 +1,15 @@
+all:
+  children:
+    master:
+      hosts:
+        k8s-master-node:
+          hostname: master-node
+          local_ip: 172.31.117.46 
+    workers:
+      hosts:
+        k8s-worker-node1:
+          hostname: worker-node1
+          local_ip: 172.31.115.1
+        k8s-worker-node2:
+          hostname: worker-node2
+          local_ip: 172.31.125.161

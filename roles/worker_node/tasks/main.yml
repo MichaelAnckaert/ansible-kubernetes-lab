@@ -1,0 +1,3 @@
+---
+- name: Have the worker node join the Kubernetes cluster
+  command: "{{ hostvars['DUMMY_HOST']['kubeadm_join_command'] }}"

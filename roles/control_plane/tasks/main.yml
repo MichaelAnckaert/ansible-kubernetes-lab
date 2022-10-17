@@ -1,0 +1,29 @@
+---
+- name: Check if cluster is initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: cluster_initialized
+- name: Run kubeadm init on control plane node
+  command: kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.24.0
+  when: not cluster_initialized.stat.exists
+- name: Create .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    group: root
+    mode: 0600
+  when: not cluster_initialized.stat.exists
+- name: Copy default kube config
+  command: cp -i /etc/kubernetes/admin.conf /root/.kube/config
+  when: not cluster_initialized.stat.exists
+- name: Install Calico network add-on
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+- name: Get kubeadm join command
+  command: kubeadm token create --print-join-command
+  register: tmp_kubeadm_join_command
+
+- name: Register dummy host with variable
+  add_host:
+    name: "DUMMY_HOST"
+    kubeadm_join_command: " {{ tmp_kubeadm_join_command.stdout }}"

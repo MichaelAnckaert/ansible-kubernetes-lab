@@ -1,0 +1,9 @@
+127.0.0.1 localhost
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+
+{% for host in groups['all'] %}
+{% if 'local_ip' in hostvars[host] %}
+{{ hostvars[host]['local_ip'] }}     {{ hostvars[host]['hostname'] }}
+{% endif %}
+{% endfor %}
